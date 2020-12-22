@@ -1,16 +1,22 @@
 package serialization;
 
+import com.google.gson.TypeAdapter;
+import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+
+import java.io.IOException;
+import java.util.HashMap;
 
 
 public class FPLBootstrapStatic {
     @SerializedName(value="total_players")
     private int totalPlayers;
     private FPLEvent[] events;
-    private FPLTeam[] teams;
+    @JsonAdapter(value=FPLTeamAdapter.class)
+    private HashMap<Integer, FPLTeam> teams;
     private FPLElement[] elements;
-
-
 
     public class FPLElement {
         @SerializedName(value="first_name")
@@ -100,10 +106,55 @@ public class FPLBootstrapStatic {
         }
     }
 
-    public class FPLTeam {
-        private String name;
+    public class FPLTeamAdapter extends TypeAdapter<HashMap<Integer, FPLTeam>> {
+        @Override
+        public void write(JsonWriter out, HashMap<Integer, FPLTeam> value) throws IOException {
 
-        @SerializedName(value="short_name")
+        }
+
+        @Override
+        public HashMap<Integer, FPLTeam> read(JsonReader in) throws IOException {
+            HashMap<Integer, FPLTeam> teams = new HashMap<Integer, FPLTeam>();
+            in.beginArray();
+
+            int key = -1;
+            String teamName = "";
+            String teamShortName = "";
+
+            while (in.hasNext()) {
+                in.beginObject();
+                while(in.hasNext()) {
+                    String name = in.nextName();
+                    if (name.equals("code")) {
+                        key = in.nextInt();
+                    }
+                    else if (name.equals("name")) {
+                        teamName = in.nextString();
+                    }
+                    else if (name.equals("short_name")) {
+                        teamShortName = in.nextString();
+                    }
+                    else {
+                        in.skipValue();
+                    }
+                }
+                FPLTeam team = new FPLTeam(teamName, teamShortName);
+                teams.put(key, team);
+                in.endObject();
+            }
+            in.endArray();
+            return teams;
+        }
+
+    }
+
+    public class FPLTeam{
+        FPLTeam(String name, String shortName) {
+            this.name = name;
+            this.shortName = shortName;
+        }
+
+        private String name;
         private String shortName;
 
         public String getShortName() {
@@ -378,11 +429,11 @@ public class FPLBootstrapStatic {
         }
     }
 
-    public FPLTeam[] getTeams() {
+    public HashMap<Integer, FPLTeam> getTeams() {
         return teams;
     }
 
-    public void setTeams(FPLTeam[] teams) {
+    public void setTeams(HashMap<Integer, FPLTeam>teams) {
         this.teams = teams;
     }
 

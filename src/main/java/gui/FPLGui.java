@@ -47,6 +47,7 @@ public class FPLGui {
         String[] columnNames = {
                 "First Name",
                 "Last Name",
+                "Team",
                 "Minutes",
                 "Assists",
                 "Goals",
@@ -67,20 +68,22 @@ public class FPLGui {
         TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(table.getModel());
         IntComparator intComparator = new IntComparator();
         FloatComparator floatComparator = new FloatComparator();
-        sorter.setComparator(2, intComparator);
         sorter.setComparator(3, intComparator);
         sorter.setComparator(4, intComparator);
         sorter.setComparator(5, intComparator);
-        sorter.setComparator(6, floatComparator);
+        sorter.setComparator(6, intComparator);
+        sorter.setComparator(7, floatComparator);
         table.setRowSorter(sorter);
         table.setAutoCreateRowSorter(false);
         return table;
     }
 
     private Object[] buildTableRow(FPLBootstrapStatic.FPLElement elem) {
+        String teamShortName = data.getTeams().get(elem.getTeamCode()).getShortName();
         Object[] row = {
                 elem.getFirstName(),
                 elem.getLastName(),
+                teamShortName,
                 elem.getMinutes(),
                 elem.getAssists(),
                 elem.getGoalsScored(),

@@ -9,26 +9,30 @@ import java.time.Duration;
 import com.google.gson.Gson;
 import gui.FPLGui;
 import serialization.FPLBootstrapStatic;
+import serialization.FPLTeamHistory;
 
 public class JavaRecap {
-    private static String BOOTSTRAP_STATIC = "https://fantasy.premierleague.com/api/bootstrap-static/";
+    private static String BOOTSTRAP_STATIC_URI = "https://fantasy.premierleague.com/api/bootstrap-static/";
+    private static String TEAM_HISTORY_URI = "https://fantasy.premierleague.com/api/entry/%s/history/";
     public static void main(String[] args) {
         HttpClient client = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_1_1)
+                .version(HttpClient.Version.HTTP_2)
                 .connectTimeout(Duration.ofSeconds(20))
                 .build();
 
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(BOOTSTRAP_STATIC))
+                .uri(URI.create(BOOTSTRAP_STATIC_URI))
                 .build();
+
 
         try {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             Gson gson = new Gson();
-            FPLBootstrapStatic data = gson.fromJson(response.body(), FPLBootstrapStatic.class);
-            FPLGui gui = new FPLGui(data);
+            FPLBootstrapStatic bootstrapData = gson.fromJson(response.body(), FPLBootstrapStatic.class);
+
+            FPLGui gui = new FPLGui(bootstrapData);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
